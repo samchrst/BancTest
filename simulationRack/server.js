@@ -1,6 +1,9 @@
 const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
 const port = 12345;
+//adresse IP de la machine dans le réseau local
+const serverIP = '192.168.27.10'; // Remplacer par l'IP réelle de la machine sur le réseau local
+
 
 server.on('message', (msg, rinfo) => {
   console.log(`Message reçu de ${rinfo.address}:${rinfo.port}: ${msg.toString()}`);
@@ -21,5 +24,5 @@ server.on('message', (msg, rinfo) => {
 
 // Lancer le serveur UDP
 server.bind(port, () => {
-  console.log(`Serveur en écoute sur le port ${port}`);
+  console.log(`Serveur en écoute sur ${serverIP} sur le port ${port}`);
 });

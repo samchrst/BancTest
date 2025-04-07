@@ -32,8 +32,7 @@ router.get('/scans', scanController.getAll);
 router.get('/scans/:id', scanController.getById);
 router.put('/scans/:id', scanController.update);
 router.delete('/scans/:id', scanController.delete);
-router.get('/scan', scanController.scan); 
-
+router.post('/scan', scanController.scan); 
 
 
 router.post('/ping', scanController.ping);

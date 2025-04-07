@@ -2,6 +2,8 @@
 const { Scan } = require('../models'); 
 const dgram = require('dgram');
 const ping = require('ping');
+const iconv = require('iconv-lite');
+
 
 module.exports = {
   // Créer un nouveau scan
@@ -110,7 +112,7 @@ module.exports = {
     try {
       // Créer un socket UDP
       const client = dgram.createSocket('udp4');
-      const broadcastAddress = '192.168.1.255'; // Adresse de broadcast pour le réseau
+      const broadcastAddress = '192.168.27.255'; // Adresse de broadcast pour le réseau
       const port = 12345; // Port sur lequel le scan sera effectué
       const message = Buffer.from('SCAN_REQUEST'); // Message à envoyer aux appareils sur le réseau
 
@@ -138,8 +140,8 @@ module.exports = {
         setTimeout(() => {
           // Répondre avec la liste des sockets découvertes
           res.json({ sockets: discoveredSockets });
-          client.close(); // Fermer le client UDP
-        }, 3000); // Attendre 3 secondes avant de donner la réponse (ajustable)
+          client.close(); 
+        }, 3000); 
       });
 
     } catch (error) {
@@ -148,34 +150,46 @@ module.exports = {
     }
   },
 
-  // Autres méthodes de scan (ping, etc.) peuvent être ajoutées ici
+  // méthode pour pinger les adresses IP
   async ping(req, res) {
     try {
-        console.log("Reçu dans le body :", req.body); // 🔥 DEBUG
-        const hosts = req.body.hosts; // 🔥 Prendre les IPs envoyées dans la requête
-
-        if (!hosts || !Array.isArray(hosts)) {
-            return res.status(400).json({ message: "Le body doit contenir un tableau 'hosts'." });
+      const hosts = req.body.hosts;
+  
+      if (!hosts || !Array.isArray(hosts)) {
+        return res.status(400).json({ message: "Le body doit contenir un tableau 'hosts'." });
+      }
+  
+      let results = [];
+  
+      for (let host of hosts) {
+        let response = await ping.promise.probe(host, {
+          extra: ['-n', '1'], // ping une seule fois
+          encoding: 'buffer'  // récupérer output sous forme de Buffer
+        });
+  
+        let output = response.output;
+        if (Buffer.isBuffer(output)) {
+          // conversion en UTF-8 si nécessaire
+          output = response.output.toString('utf8');
         }
-
-        let results = [];
-
-        for (let host of hosts) {
-            let response = await ping.promise.probe(host);
-            results.push({
-                host: host,
-                alive: response.alive,
-                time: response.time,
-                output: response.output,
-            });
-        }
-
-        console.log("Résultats du ping :", results); // 🔥 DEBUG
-
-        return res.status(200).json({ message: 'Ping effectué avec succès', results });
+        
+        // Extraire l'adresse IP et le temps en ms depuis le output
+        const timeMatch = output.match(/temps=(\d+) ms/);
+        const ipMatch = output.match(/R�ponse de ([\d\.]+)/);
+        
+        results.push({
+          host: host,
+          alive: response.alive,
+          time: timeMatch ? timeMatch[1] : '-', // Si on trouve le temps
+          output: ipMatch ? ipMatch[1] : 'no response', // Si on trouve l'IP
+        });
+        
+      }
+  
+      return res.status(200).json({ message: 'Ping effectué avec succès', results });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Erreur lors du ping des adresses IP' });
+      console.error(error);
+      return res.status(500).json({ message: 'Erreur lors du ping des adresses IP' });
     }
   }
 };
