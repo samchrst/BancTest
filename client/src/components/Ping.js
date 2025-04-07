@@ -10,7 +10,13 @@ const Ping = () => {
     console.log("🔍 Début du scan...");
 
     try {
-      const hosts = ["192.168.1.1", "8.8.8.8", "example.com", "127.0.0.1"];
+    // Générer les adresses IP de 192.168.3.101 à 192.168.3.126
+    const hosts = [];
+    for (let i = 127; i <= 163; i++) {
+      hosts.push(`192.168.2.${i}`);
+    }
+
+// Afficher les adresses générées
       console.log("Envoi des hôtes à scanner:", hosts);
 
       const response = await axios.post('http://localhost:3000/api/ping', { hosts });
