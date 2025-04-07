@@ -108,47 +108,58 @@ module.exports = {
   },
 
    // méthode pour scanner le réseau
-  async scan(req, res) {
+   async scan(req, res) {
     try {
-      // Créer un socket UDP
       const client = dgram.createSocket('udp4');
-      const broadcastAddress = '192.168.27.255'; // Adresse de broadcast pour le réseau
-      const port = 12345; // Port sur lequel le scan sera effectué
-      const message = Buffer.from('SCAN_REQUEST'); // Message à envoyer aux appareils sur le réseau
-
+      const broadcastAddress = '192.168.27.255';
+      const port = 12345;
+      const message = Buffer.from('SCAN_REQUEST');
+  
       let discoveredSockets = [];
-
-      // Écouter les messages UDP de retour des appareils
+      let timeoutReached = false;
+  
+      // Écoute des messages UDP
       client.on('message', (msg, rinfo) => {
-        // Si le message est une réponse valide, on ajoute l'adresse IP à la liste
         if (msg.toString() === 'SCAN_RESPONSE') {
           if (!discoveredSockets.includes(rinfo.address)) {
             discoveredSockets.push(rinfo.address);
           }
         }
       });
-
-      // Envoi du message en broadcast à tous les appareils sur le réseau
+  
+      // Envoi du message UDP en broadcast
       client.send(message, 0, message.length, port, broadcastAddress, (err) => {
         if (err) {
-          console.error('Erreur d\'envoi du message UDP :', err);
+          console.error('Erreur d\'envoi du message UDP:', err);
           return res.status(500).json({ error: 'Erreur d\'envoi du message UDP' });
         }
         console.log('Requête de scan envoyée en broadcast');
-
-        // Arrêter le client après un délai d'attente pour laisser le temps aux appareils de répondre
-        setTimeout(() => {
-          // Répondre avec la liste des sockets découvertes
-          res.json({ sockets: discoveredSockets });
-          client.close(); 
-        }, 3000); 
       });
-
+  
+      // Arrêter après un délai d'attente
+      const timeout = setTimeout(() => {
+        timeoutReached = true;
+        if (discoveredSockets.length === 0) {
+          res.json({ message: 'Aucun appareil détecté.' });
+        } else {
+          res.json({ sockets: discoveredSockets });
+        }
+        client.close();
+      }, 3000);
+  
+      // Fermer après timeout
+      client.on('close', () => {
+        if (!timeoutReached) {
+          clearTimeout(timeout);
+        }
+      });
+  
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: 'Erreur lors du scan du réseau' });
     }
   },
+  
 
   // méthode pour pinger les adresses IP
   async ping(req, res) {
@@ -169,7 +180,6 @@ module.exports = {
   
         let output = response.output;
         if (Buffer.isBuffer(output)) {
-          // conversion en UTF-8 si nécessaire
           output = response.output.toString('utf8');
         }
         
