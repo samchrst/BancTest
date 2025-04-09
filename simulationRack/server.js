@@ -2,14 +2,12 @@ const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
 const port = 12345;
 // Adresse IP de la machine dans le réseau local
-const serverIP = '192.168.27.144'; // Remplacer par l'IP réelle de la machine sur le réseau local
+const serverIP = '192.168.27.14'; // Remplacer par l'IP réelle de la machine sur le réseau local
 
-// Liste des appareils simulés (pour cette simulation, tu peux les ignorer)
 const devices = [
   { ip: '192.168.27.20', port: 12345 },
   { ip: '192.168.27.21', port: 12345 },
   { ip: '192.168.27.22', port: 12345 },
-  // Ajouter d'autres appareils si nécessaire
 ];
 
 // Gestion des messages entrants
@@ -35,6 +33,7 @@ server.on('message', (msg, rinfo) => {
 });
 
 // Lancer le serveur UDP et écouter sur le port spécifié
-server.bind(port, serverIP, () => {
-  console.log(`Serveur en écoute sur ${serverIP} sur le port ${port}`);
+server.bind(port, '0.0.0.0', () => {
+  console.log(`Serveur en écoute sur toutes les interfaces sur le port ${port}`);
 });
+

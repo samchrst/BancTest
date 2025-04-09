@@ -12,8 +12,8 @@ const Ping = () => {
     try {
     // Générer les adresses IP de 192.168.3.101 à 192.168.3.126
     const hosts = [];
-    for (let i = 127; i <= 163; i++) {
-      hosts.push(`192.168.2.${i}`);
+    for (let i = 20; i <= 22; i++) {
+      hosts.push(`192.168.27.${i}`);
     }
 
 // Afficher les adresses générées

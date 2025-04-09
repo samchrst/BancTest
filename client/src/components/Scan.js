@@ -13,6 +13,8 @@ function Scan() {
       console.log('Réponse reçue de l\'API:', response.data);
 
       if (response.data.devices && response.data.devices.length > 0) {
+        console.log('Contenu de response.data.devices:', response.data.devices);
+
         setDevices(response.data.devices);
         setScanStatus('Scan terminé');
       } else {
