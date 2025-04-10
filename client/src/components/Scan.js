@@ -7,6 +7,21 @@ function Scan() {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Fonction pour enregistrer l'historique dans localStorage
+  const saveToHistory = (devices) => {
+    const currentDate = new Date().toLocaleString();
+    const newScan = { 
+      date: currentDate, 
+      hosts: devices,  // Changer 'devices' en 'hosts'
+      results: devices.length > 0,  // Ajouter un champ 'results' pour indiquer si le scan a réussi
+    };
+  
+    const scanHistory = JSON.parse(localStorage.getItem('scanHistory')) || [];
+    scanHistory.push(newScan);
+    localStorage.setItem('scanHistory', JSON.stringify(scanHistory));
+  };
+  
+
   const startScan = async () => {
     setScanStatus('Scan en cours...');
     setLoading(true);
@@ -15,6 +30,9 @@ function Scan() {
       if (response.data.devices && response.data.devices.length > 0) {
         setDevices(response.data.devices);
         setScanStatus('Scan terminé avec succès 🎉');
+        
+        // Sauvegarder les résultats dans l'historique
+        saveToHistory(response.data.devices);
       } else {
         setDevices([]);
         setScanStatus('Aucun appareil trouvé 😕');
