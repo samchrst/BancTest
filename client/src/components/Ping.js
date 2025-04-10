@@ -5,19 +5,46 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const Ping = () => {
   const [racks, setRacks] = useState([]);
   const [error, setError] = useState(null);
-
-  // Fonction pour récupérer les racks avec leurs sockets
+  const [startIp, setStartIp] = useState('');
+  const [endIp, setEndIp] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [scanCompleted, setScanCompleted] = useState(false);  
+  
   const handleScan = async () => {
     console.log("🔍 Début du scan...");
+    
+    setIsLoading(true);  
+    setScanCompleted(false); 
+    setRacks([]);
 
     try {
-      // boucle pour définir les adresses IP à scanner
-      const hosts = [];
-      for (let i = 20; i <= 22; i++) {
-        hosts.push(`192.168.27.${i}`);
+      // Validation des champs de saisie
+      if (!startIp || !endIp) {
+        setError('Veuillez saisir la plage d\'adresses IP');
+        setIsLoading(false);
+        setScanCompleted(true);
+        return;
+      }
+      
+      // Extraire le dernier octet des adresses de début et de fin
+      const startOctet = parseInt(startIp.split('.').pop());
+      const endOctet = parseInt(endIp.split('.').pop());
+
+      if (isNaN(startOctet) || isNaN(endOctet) || startOctet > endOctet) {
+        setError('Plage d\'adresses invalide');
+        setIsLoading(false);
+        setScanCompleted(true);
+        return;
       }
 
-      // Afficher les adresses générées
+      // Générer la liste des adresses IP à scanner
+      const hosts = [];
+      const baseIp = startIp.substring(0, startIp.lastIndexOf('.') + 1);
+      
+      for (let i = startOctet; i <= endOctet; i++) {
+        hosts.push(`${baseIp}${i}`);
+      }
+
       console.log("Envoi des hôtes à scanner:", hosts);
 
       const response = await axios.post('http://localhost:3000/api/ping', { hosts });
@@ -30,6 +57,9 @@ const Ping = () => {
     } catch (error) {
       console.error('Erreur lors du scan des racks:', error);
       setError('Erreur lors du scan des racks');
+    } finally {
+      setIsLoading(false); 
+      setScanCompleted(true); 
     }
   };
 
@@ -37,16 +67,57 @@ const Ping = () => {
     <div className="container py-5">
       <div className="text-center mb-4">
         <h1 className="mb-3">🖥️ Scan des Racks</h1>
+        
+        {/* Formulaire pour saisir la plage d'adresses IP */}
+        <div className="form-group">
+          <label htmlFor="startIp">Adresse IP de départ</label>
+          <input
+            type="text"
+            id="startIp"
+            className="form-control"
+            placeholder="192.168.27.20"
+            value={startIp}
+            onChange={(e) => setStartIp(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="endIp">Adresse IP de fin</label>
+          <input
+            type="text"
+            id="endIp"
+            className="form-control"
+            placeholder="192.168.27.22"
+            value={endIp}
+            onChange={(e) => setEndIp(e.target.value)}
+          />
+        </div>
+
         <button
           onClick={handleScan}
-          className="btn btn-success btn-lg"
+          className="btn btn-success btn-lg mt-3"
         >
           Lancer le Ping
         </button>
+
         {error && <div className="alert alert-danger mt-3">{error}</div>}
       </div>
 
-      {racks && Array.isArray(racks) && racks.length > 0 ? (
+      {isLoading && (
+        <div className="text-center my-4">
+          <div className="spinner-border text-primary" role="status">
+            <span className="sr-only"></span>
+          </div>
+          <p>Scan en cours...</p>
+        </div>
+      )}
+
+      {/* Affichage des résultats */}
+      {scanCompleted && racks && Array.isArray(racks) && racks.length === 0 && (
+        <div className="alert alert-info mt-3">Aucun rack trouvé ou une erreur est survenue.</div>
+      )}
+
+      {racks && Array.isArray(racks) && racks.length > 0 && (
         <div className="row">
           {racks.map((rack, index) => (
             <div key={index} className="col-md-4 mb-4">
@@ -67,8 +138,6 @@ const Ping = () => {
             </div>
           ))}
         </div>
-      ) : (
-        <div className="alert alert-info mt-3">Aucun rack trouvé ou une erreur est survenue.</div>
       )}
     </div>
   );

@@ -7,6 +7,7 @@ import Scan from './components/Scan';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Ping from './components/Ping';
 import Historique from './components/Historique';
+import Home from './components/Home';
 
 function App() {
   return (
@@ -14,6 +15,8 @@ function App() {
       <Router>
         <Header />
         <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/ping" element={<Ping />} />
           <Route path="/scan" element={<Scan />} />  
           <Route path="/historique" element={<Historique />} />       
