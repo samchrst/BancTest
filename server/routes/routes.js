@@ -34,7 +34,8 @@ router.put('/scans/:id', scanController.update);
 router.delete('/scans/:id', scanController.delete);
 router.post('/scan', scanController.scan); 
 
-
 router.post('/ping', scanController.ping);
+
+router.post('/check', seringueController.checkSeringueStatus)
 
 module.exports = router;
