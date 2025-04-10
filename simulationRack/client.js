@@ -1,7 +1,7 @@
 const dgram = require('dgram');
 const client = dgram.createSocket('udp4');
 const port = 12345;
-const serverIP = '192.168.27.148';  // IP de ton serveur
+const serverIP = '192.168.27.107';  // IP de ton serveur
 
 // Envoi de la requête de scan
 const message = Buffer.from('SCAN_REQUEST');

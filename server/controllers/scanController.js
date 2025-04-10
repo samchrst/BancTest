@@ -109,55 +109,51 @@ module.exports = {
 
    // méthode pour scanner le réseau
    async scan(req, res) {
-    try {
-      const client = dgram.createSocket('udp4');
-      const broadcastAddress = '192.168.27.255';
-      const port = 12345;
-      const message = Buffer.from('SCAN_REQUEST');
-  
-      let discoveredSockets = [];
-      let timeoutReached = false;
-  
-      // Écoute des messages UDP
+    const client = dgram.createSocket('udp4');
+    const broadcastAddress = '192.168.27.255'; // Adresse de broadcast du réseau local
+    const port = 12346; // Port sur lequel le message sera envoyé
+    const message = Buffer.from('SCAN_REQUEST');
+
+    let discoveredSockets = [];
+    let responded = false;
+
+    client.bind(() => {
+      // Autoriser le broadcast
+      client.setBroadcast(true);
+
+      // Écoute des réponses
       client.on('message', (msg, rinfo) => {
-        if (msg.toString() === 'SCAN_RESPONSE') {
+        const msgStr = msg.toString();
+        console.log(`Réponse UDP reçue de ${rinfo.address}:${rinfo.port}: ${msgStr}`);
+        if (msgStr === 'SCAN_RESPONSE') {
           if (!discoveredSockets.includes(rinfo.address)) {
             discoveredSockets.push(rinfo.address);
           }
         }
       });
-  
-      // Envoi du message UDP en broadcast
+
+      // Envoi du message en broadcast
       client.send(message, 0, message.length, port, broadcastAddress, (err) => {
         if (err) {
-          console.error('Erreur d\'envoi du message UDP:', err);
-          return res.status(500).json({ error: 'Erreur d\'envoi du message UDP' });
+          console.error("Erreur d'envoi:", err);
+          client.close();
+          return res.status(500).json({ error: "Erreur d'envoi du message UDP" });
         }
-        console.log('Requête de scan envoyée en broadcast');
+        console.log('Message SCAN_REQUEST envoyé en broadcast');
       });
-  
-      // Arrêter après un délai d'attente
-      const timeout = setTimeout(() => {
-        timeoutReached = true;
-        if (discoveredSockets.length === 0) {
-          res.json({ message: 'Aucun appareil détecté.' });
-        } else {
-          res.json({ sockets: discoveredSockets });
-        }
+    });
+
+    setTimeout(() => {
+      if (!responded) {
+        responded = true;
         client.close();
-      }, 3000);
-  
-      // Fermer après timeout
-      client.on('close', () => {
-        if (!timeoutReached) {
-          clearTimeout(timeout);
+        if (discoveredSockets.length > 0) {
+          return res.json({ devices: discoveredSockets });
+        } else {
+          return res.json({ message: "Aucun socket détecté." });
         }
-      });
-  
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Erreur lors du scan du réseau' });
-    }
+      }
+    }, 5000);
   },
   
 

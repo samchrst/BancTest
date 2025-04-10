@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Ping = () => {
   const [racks, setRacks] = useState([]);
@@ -10,13 +11,13 @@ const Ping = () => {
     console.log("🔍 Début du scan...");
 
     try {
-    // Générer les adresses IP de 192.168.3.101 à 192.168.3.126
-    const hosts = [];
-    for (let i = 20; i <= 22; i++) {
-      hosts.push(`192.168.27.${i}`);
-    }
+      // boucle pour définir les adresses IP à scanner
+      const hosts = [];
+      for (let i = 20; i <= 22; i++) {
+        hosts.push(`192.168.27.${i}`);
+      }
 
-// Afficher les adresses générées
+      // Afficher les adresses générées
       console.log("Envoi des hôtes à scanner:", hosts);
 
       const response = await axios.post('http://localhost:3000/api/ping', { hosts });
@@ -33,27 +34,41 @@ const Ping = () => {
   };
 
   return (
-    <div className="scan-container">
-      <button onClick={handleScan} className="scan-button">Ping</button>
-
-      {error && <p className="error-message">{error}</p>}
+    <div className="container py-5">
+      <div className="text-center mb-4">
+        <h1 className="mb-3">🖥️ Scan des Racks</h1>
+        <button
+          onClick={handleScan}
+          className="btn btn-success btn-lg"
+        >
+          Lancer le Ping
+        </button>
+        {error && <div className="alert alert-danger mt-3">{error}</div>}
+      </div>
 
       {racks && Array.isArray(racks) && racks.length > 0 ? (
-        <div className="racks-container">
-          {racks.map((rack, index) => {
-            console.log(`Affichage du rack #${index}:`, rack);
-            return (
-              <div key={index} className="rack-container">
-                <h3 className="rack-title">Host: {rack.host}</h3>
-                <p className="rack-info">Alive: {rack.alive ? 'Yes' : 'No'}</p>
-                <p className="rack-info">Time: {rack.time} ms</p>
-                <p className="rack-info">Output: {rack.output}</p>
+        <div className="row">
+          {racks.map((rack, index) => (
+            <div key={index} className="col-md-4 mb-4">
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title">Host: {rack.host}</h5>
+                  <p className="card-text">
+                    <strong>Status:</strong> {rack.alive ? '🟢 Alive' : '🔴 Dead'}
+                  </p>
+                  <p className="card-text">
+                    <strong>Time:</strong> {rack.time} ms
+                  </p>
+                  <p className="card-text">
+                    <strong>Output:</strong> {rack.output}
+                  </p>
+                </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       ) : (
-        <p>Aucun rack trouvé ou une erreur est survenue.</p>
+        <div className="alert alert-info mt-3">Aucun rack trouvé ou une erreur est survenue.</div>
       )}
     </div>
   );

@@ -2,7 +2,7 @@ const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
 const port = 12345;
 // Adresse IP de la machine dans le réseau local
-const serverIP = '192.168.27.14'; // Remplacer par l'IP réelle de la machine sur le réseau local
+const serverIP = '192.168.27.107'; // Remplacer par l'IP réelle de la machine sur le réseau local
 
 const devices = [
   { ip: '192.168.27.20', port: 12345 },
