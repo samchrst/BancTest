@@ -20,26 +20,23 @@ const PingHistory = () => {
   };
 
   return (
-    <div>
-      {/* Affichage de l'historique avec des boutons pour chaque entrée */}
+    <div className="container py-5">
+      <h2 className="mb-4">Historique des Pings</h2>
+      {/* Affichage de l'historique avec une liste stylisée grâce à Bootstrap */}
       {historyData.length > 0 ? (
-        historyData.map((item) => (
-          <button
-            key={item.serialNumber}
-            onClick={() => handleRowClick(item.serialNumber)}
-            style={{
-              display: 'block',
-              margin: '10px',
-              padding: '10px',
-              backgroundColor: '#007bff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '5px',
-            }}
-          >
-            {item.serialNumber} - {item.date}
-          </button>
-        ))
+        <ul className="list-group">
+          {historyData.map((item) => (
+            <li
+              key={item.serialNumber}
+              className="list-group-item d-flex justify-content-between align-items-center"
+              style={{ cursor: 'pointer' }}
+              onClick={() => handleRowClick(item.serialNumber)}
+            >
+              <span>S/N : {item.serialNumber} - {item.date}</span>
+              <button className="btn btn-primary btn-sm">Voir le rapport</button>
+            </li>
+          ))}
+        </ul>
       ) : (
         <p>Aucune donnée disponible</p> // Message affiché si l'historique est vide
       )}

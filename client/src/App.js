@@ -10,6 +10,7 @@ import Historique from './components/Historique';
 import Home from './components/Home';
 import PingHistory from './components/pingHistory';
 import Rapport from './components/Rapport';
+import TestSeringues from './components/TestSeringue';
 
 function App() {
   return (
@@ -20,7 +21,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/ping" element={<Ping />} />
-          <Route path="/scan" element={<Scan />} />  
+          <Route path="/scan" element={<Scan />} /> 
+          <Route path="/seringues" element={<TestSeringues />} /> 
           <Route path="/historique" element={<Historique />} /> 
           <Route path="/pingHistory" element={<PingHistory />} /> 
           <Route path="/rapport/:serialNumber" element={<Rapport />} />

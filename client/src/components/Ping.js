@@ -65,6 +65,25 @@ const Ping = () => {
       history.push(newEntry);  // Ajoute l'objet au tableau sans utiliser le numéro de série comme clé
       localStorage.setItem('pingHistory', JSON.stringify(history));
   
+      // 🔥 Enregistrer les résultats des seringues
+      const seringuesHistory = response.data.results.map(rack => {
+        return {
+          host: rack.host,
+          seringues: Array.from({ length: 8 }).map((_, slotIndex) => {
+            return rack.seringues && rack.seringues[slotIndex] ? {
+              slot: slotIndex + 1,
+              connector: rack.seringues[slotIndex].connector,
+              status: 'Connectée'
+            } : {
+              slot: slotIndex + 1,
+              status: 'Non connectée'
+            };
+          }),
+        };
+      });
+  
+      localStorage.setItem('seringuesHistory', JSON.stringify(seringuesHistory));
+  
     } catch (error) {
       console.error('Erreur lors du scan des racks:', error);
       setError('Erreur lors du scan des racks');
@@ -73,7 +92,6 @@ const Ping = () => {
       setScanCompleted(true); 
     }
   };
-  
 
   return (
     <div className="container py-5">
@@ -144,6 +162,20 @@ const Ping = () => {
                   <p><strong>Status:</strong> {rack.alive ? '🟢 Alive' : '🔴 Dead'}</p>
                   <p><strong>Time:</strong> {rack.time} ms</p>
                   <p><strong>Output:</strong> {rack.output}</p>
+
+                  {/* Affichage des slots pour les seringues */}
+                  <div className="mt-3">
+                    <h6>Seringues connectées :</h6>
+                    {Array.from({ length: 8 }).map((_, slotIndex) => {
+                      const seringue = rack.seringues ? rack.seringues[slotIndex] : null;
+                      return (
+                        <div key={slotIndex} className="d-flex justify-content-between">
+                          <p>Seringue {slotIndex + 1}</p>
+                          <p>{seringue ? `Connectée (Connecteur: ${seringue.connector})` : '🔴 Non connectée'}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>

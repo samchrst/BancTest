@@ -26,6 +26,7 @@ function Header() {
           <Nav className="me-auto">
             <Nav.Link as={Link} to="/scan">Scan</Nav.Link>
             <Nav.Link as={Link} to="/ping">Ping</Nav.Link>
+            <Nav.Link as={Link} to="/seringues">Seringues</Nav.Link>
             <NavDropdown title="Menu" id="basic-nav-dropdown">
               <NavDropdown.Item as={Link} to="/historique">Historique</NavDropdown.Item>
               <NavDropdown.Item as={Link} to="/pingHistory">Rapport des ping</NavDropdown.Item>
