@@ -8,6 +8,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Ping from './components/Ping';
 import Historique from './components/Historique';
 import Home from './components/Home';
+import PingHistory from './components/pingHistory';
+import Rapport from './components/Rapport';
 
 function App() {
   return (
@@ -19,7 +21,9 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/ping" element={<Ping />} />
           <Route path="/scan" element={<Scan />} />  
-          <Route path="/historique" element={<Historique />} />       
+          <Route path="/historique" element={<Historique />} /> 
+          <Route path="/pingHistory" element={<PingHistory />} /> 
+          <Route path="/rapport/:serialNumber" element={<Rapport />} />
         </Routes>
       </Router>
     </div>

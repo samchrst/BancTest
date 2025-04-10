@@ -28,6 +28,7 @@ function Header() {
             <Nav.Link as={Link} to="/ping">Ping</Nav.Link>
             <NavDropdown title="Menu" id="basic-nav-dropdown">
               <NavDropdown.Item as={Link} to="/historique">Historique</NavDropdown.Item>
+              <NavDropdown.Item as={Link} to="/pingHistory">Rapport des ping</NavDropdown.Item>
             </NavDropdown>
           </Nav>
           <Nav>
