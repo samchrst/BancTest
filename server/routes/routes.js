@@ -37,5 +37,7 @@ router.post('/scan', scanController.scan);
 router.post('/ping', scanController.ping);
 
 router.post('/check', seringueController.checkSeringueStatus)
+router.post('/turnOn', seringueController.turnOnSeringue)
+router.post('/turnOff', seringueController.turnOffSeringue)
 
 module.exports = router;

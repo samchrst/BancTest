@@ -53,7 +53,7 @@ const Ping = () => {
       setRacks(response.data.results);
       setError(null);
   
-      // 🔥 Stocker avec le numéro de série comme un attribut dans l'objet
+      // Stocker avec le numéro de série comme un attribut dans l'objet
       const history = JSON.parse(localStorage.getItem('pingHistory')) || [];
       const newEntry = {
         serialNumber,
@@ -65,7 +65,7 @@ const Ping = () => {
       history.push(newEntry);  // Ajoute l'objet au tableau sans utiliser le numéro de série comme clé
       localStorage.setItem('pingHistory', JSON.stringify(history));
   
-      // 🔥 Enregistrer les résultats des seringues
+      // Enregistrer les résultats des seringues
       const seringuesHistory = response.data.results.map(rack => {
         return {
           host: rack.host,
