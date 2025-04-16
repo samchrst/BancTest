@@ -22,7 +22,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/ping" element={<Ping />} />
           <Route path="/scan" element={<Scan />} /> 
-          <Route path="/seringues" element={<TestSeringues />} /> 
+          <Route path="/seringues" element={<TestSeringues socketId={0xFF}/>} /> 
           <Route path="/historique" element={<Historique />} /> 
           <Route path="/pingHistory" element={<PingHistory />} /> 
           <Route path="/rapport/:serialNumber" element={<Rapport />} />

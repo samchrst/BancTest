@@ -2,7 +2,13 @@ const { Seringue } = require('../models');
 const dgram = require('dgram');
 const client = dgram.createSocket('udp4');
 
+
+
 class SeringueController {
+  constructor() {
+    this.checkSeringueStatus = this.checkSeringueStatus.bind(this);
+    this.parseSyringeInfo = this.parseSyringeInfo.bind(this);
+  }
   // Créer une nouvelle seringue
   async createSeringue(req, res) {
     try {
@@ -122,7 +128,7 @@ class SeringueController {
       console.log("📤 Buffer envoyé :", frame.toString('hex'));
   
       const serverAddress = '192.168.2.103';
-      const serverPort = 0xCAFE; // attention c’est un entier, pas `Buffer.from([0xCAFE])`
+      const serverPort = 0xCAFE; 
   
       // Envoi UDP
       client.send(frame, 0, frame.length, serverPort, serverAddress, (err) => {
@@ -146,8 +152,8 @@ class SeringueController {
       const { socketId, handshake } = req.body;
   
       const segmentLength = 0x03;
-      const command = 0x43; // même commande que pour allumer
-      const data = 0x00;    // ici on envoie 0x00 pour éteindre
+      const command = 0x43; // commande pour allumer
+      const data = 0x00;   
   
       const frame = Buffer.from([
         socketId,       // ID socket (1 byte)
@@ -178,10 +184,6 @@ class SeringueController {
     }
   }
   
-
-
-  
-  // Vérifier le statut d'une seringue via UDP
 // Fonction pour vérifier le statut de la seringue via UDP
 async checkSeringueStatus(req, res) {
   const dgram = require('dgram');
@@ -190,14 +192,27 @@ async checkSeringueStatus(req, res) {
   try {
     const { socketId, handshake } = req.body;
 
-    const segmentLength = 0x05;
+    // Validation des données
+    if (handshake === undefined || handshake === null) {
+      return res.status(400).json({ message: 'Handshake requis' });
+    }
+
+    const segmentLength = 0x03;
     const command = 0x47;
     const canAddress = 0x00;
+    client.bind(51966); // Bind à un port aléatoire
 
-    const frame = Buffer.from([socketId, segmentLength, command, handshake, canAddress]);
+    const frame = Buffer.from([
+      socketId, 
+      segmentLength, 
+      command, 
+      handshake, 
+      canAddress
+    ]);
 
     const serverAddress = '192.168.2.103';
-    const serverPort = 51966; // Port de la seringue
+    const serverPort = 0xCAFE; // Port de la seringue
+    const self = this;
 
     let responseSent = false;
 
@@ -206,12 +221,15 @@ async checkSeringueStatus(req, res) {
       responseSent = true;
 
       console.log('📥 Réponse reçue:', msg.toString('hex'));
+      console.log("📦 Données reçues pour check:", req.body);
 
       try {
-        const parsed = parseSyringeInfo(msg);
+        const parsed = self.parseSyringeInfo(msg);
         client.close();
+        console.log('Parsed Data:', parsed);
         return res.status(200).json({ message: '🧪 Infos seringue reçues', parsed });
       } catch (error) {
+        console.error('❌ Erreur de parsing:', error.message);
         client.close();
         return res.status(400).json({ message: 'Erreur de parsing', error: error.message });
       }
@@ -221,10 +239,7 @@ async checkSeringueStatus(req, res) {
       console.log('✅ Client en écoute sur le port aléatoire');
       client.send(frame, 0, frame.length, serverPort, serverAddress);
     });
-
-    // Lier le client à un port aléatoire (bind 0)
-    client.bind(0);
-
+    
     client.send(frame, 0, frame.length, serverPort, serverAddress, (err) => {
       if (err) {
         console.error('❌ Erreur envoi UDP:', err);
@@ -254,13 +269,20 @@ async checkSeringueStatus(req, res) {
 }
 
 
-
 // Fonction pour parser les infos de la seringue
- parseSyringeInfo(msg) {
+parseSyringeInfo(msg) {
   const expectedCommand = 0x54;
   if (msg[2] !== expectedCommand) {
     throw new Error('Réponse inattendue, commande incorrecte');
   }
+
+  console.log('Longueur du buffer reçu :', msg.length);
+
+  if (msg.length < 19) {
+    throw new Error(`Message trop court (${msg.length} octets), impossible de parser`);
+  }
+
+  const serialNumber = msg.slice(5, 11).toString('hex');
 
   const parsedData = {
     socketId: msg[0],
@@ -268,16 +290,16 @@ async checkSeringueStatus(req, res) {
     command: msg[2],
     handshake: msg[3],
     canAddress: msg[4],
-    serialNumber: msg.slice(5, 11).toString('hex'),
+    serialNumber: serialNumber,
     code: msg[11],
     revision: msg.readUInt16BE(12),
     length: msg.readUIntBE(14, 3),
     crc: msg.readUInt16BE(17)
   };
-  console.log('Parsed Data:', parsedData);
 
+  console.log('Parsed Data:', parsedData);
   return parsedData;
-}
+  }
 }
 
 module.exports = new SeringueController();

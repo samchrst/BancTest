@@ -5,6 +5,7 @@ const TestSeringue = ({ socketId }) => {
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState('');
   const [handshake, setHandshake] = useState(0); // 💡 compteur handshake
+  console.log("socketId reçu en prop :", socketId);
 
   const fetchWithTimeout = (url, options = {}, timeout = 10000) => {
     return Promise.race([
@@ -15,8 +16,8 @@ const TestSeringue = ({ socketId }) => {
     ]);
   };
 
-  const turnOnSeringue = async (seringueId) => {
-    if (loading) return;  // Empêche d'envoyer plusieurs requêtes en parallèle
+  const turnOnSeringue = async () => {
+    if (loading) return; 
     setLoading(true);
 
     try {
@@ -41,17 +42,17 @@ const TestSeringue = ({ socketId }) => {
       console.error('❌ Erreur allumage :', err);
       setErreur('Impossible d\'activer la seringue.');
     } finally {
-      setLoading(false); // Relâche la condition de "loading" après l'opération
+      setLoading(false);
     }
   };
 
-  const turnOffSeringue = async (seringueId) => {
-    if (loading) return;  // Empêche d'envoyer plusieurs requêtes en parallèle
+  const turnOffSeringue = async () => {
+    if (loading) return;
     setLoading(true);
 
     try {
       const currentHandshake = handshake;
-      setHandshake((prev) => (prev + 1) % 256); // 🔄 idem
+      setHandshake((prev) => (prev + 1) % 256);
 
       const response = await fetchWithTimeout('http://localhost:3000/api/turnOff', {
         method: 'POST',
@@ -71,39 +72,51 @@ const TestSeringue = ({ socketId }) => {
       console.error('❌ Erreur extinction :', err);
       setErreur('Impossible de désactiver la seringue.');
     } finally {
-      setLoading(false); // Relâche la condition de "loading" après l'opération
+      setLoading(false);
     }
   };
 
   const testAllSeringues = async () => {
-    if (loading) return;  // Si déjà en train de charger, ne pas faire une nouvelle requête
-
+    if (loading) return;
+  
     setLoading(true);
     setErreur('');
     setSeringueStatus([]);
-
+  
     try {
+      const currentHandshake = handshake;
+      setHandshake((prev) => (prev + 1) % 256);
+  
+      console.log("socketId avant l'envoi : ", socketId);
+  
       const response = await fetchWithTimeout('http://localhost:3000/api/check', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ seringue_socket_Id: socketId }),
+        body: JSON.stringify({
+          socketId,
+          handshake: currentHandshake,
+        }),
       });
-
+  
+      console.log("Envoi : ", { socketId, handshake: currentHandshake });
+  
       if (!response.ok) throw new Error('Erreur serveur');
+  
       const data = await response.json();
       console.log('🔍 Check seringues :', data);
-
-      if (!data.connectedSyringes) throw new Error('Format de réponse inattendu');
-
-      const formatted = data.connectedSyringes.map((item) => ({
-        id: item.seringueId,
-        connected: item.status === 'connected',
-        connector: item.connector || '---',
-      }));
-
-      setSeringueStatus(formatted);
+  
+      if (!data.parsed) throw new Error('Pas de données reçues');
+  
+      const formatted = {
+        id: data.parsed.canAddress,
+        connected: data.parsed.serialNumber !== '000000000000', // Condition ajoutée ici
+        serialNumber: data.parsed.serialNumber,
+      };
+  
+      setSeringueStatus([formatted]);
+  
     } catch (err) {
       console.error('❌ Erreur check :', err);
       setErreur('Impossible de vérifier les seringues.');
@@ -114,31 +127,33 @@ const TestSeringue = ({ socketId }) => {
 
   return (
     <div className="container py-5">
-      <h3>Test des seringues de la socket {socketId}</h3>
+      <h3>Test des seringues de la socket</h3>
 
-      <button
-        className="btn btn-success mb-4"
-        onClick={testAllSeringues}
-        disabled={loading}
-      >
-        {loading ? 'Test en cours...' : 'Tester toutes les seringues'}
-      </button>
+      <div className="btn-group-vertical mb-4">
+        <button
+          className="btn btn-success mb-3"
+          onClick={() => turnOnSeringue(1)}
+          disabled={loading}
+        >
+          {loading ? 'Test en cours...' : 'Allumer la seringue 1'}
+        </button>
 
-      <button
-        className="btn btn-success mb-4"
-        onClick={() => turnOnSeringue(1)}
-        disabled={loading}
-      >
-        {loading ? 'Test en cours...' : 'Allumer la seringue 1'}
-      </button>
+        <button
+          className="btn btn-danger mb-3"
+          onClick={() => turnOffSeringue(1)}
+          disabled={loading}
+        >
+          {loading ? 'Test en cours...' : 'Éteindre la seringue 1'}
+        </button>
 
-      <button
-        className="btn btn-danger mb-4"
-        onClick={() => turnOffSeringue(1)}
-        disabled={loading}
-      >
-        {loading ? 'Test en cours...' : 'Éteindre la seringue 1'}
-      </button>
+        <button
+          className="btn btn-success mb-3"
+          onClick={testAllSeringues}
+          disabled={loading}
+        >
+          {loading ? 'Test en cours...' : 'Tester toutes les seringues'}
+        </button>
+      </div>
 
       {erreur && <p className="text-danger">{erreur}</p>}
 
@@ -149,15 +164,15 @@ const TestSeringue = ({ socketId }) => {
               <tr>
                 <th>ID</th>
                 <th>Connectée</th>
-                <th>Connecteur</th>
+                <th>Numéro de série</th>
               </tr>
             </thead>
             <tbody>
               {seringueStatus.map((seringue) => (
-                <tr key={seringue.id}>
+                <tr key={seringue.id}> 
                   <td>Seringue {seringue.id}</td>
                   <td>{seringue.connected ? '🟢 Connectée' : '🔴 Déconnectée'}</td>
-                  <td>{seringue.connector}</td>
+                  <td>{seringue.serialNumber}</td>
                 </tr>
               ))}
             </tbody>
