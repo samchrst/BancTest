@@ -9,12 +9,12 @@ function Header() {
   const user = JSON.parse(localStorage.getItem('userInfo'));
   const navigate = useNavigate();
 
-  // Si pas connecté → pas de navbar
+  // Si pas connecté -> pas de navbar
   if (!user) return null;
 
   const handleLogout = () => {
     localStorage.removeItem('userInfo');
-    navigate('/home'); // ou "/" selon ta route d'accueil
+    navigate('/home');
   };
 
   return (

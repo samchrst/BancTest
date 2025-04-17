@@ -10,10 +10,10 @@ const Ping = () => {
   const [serialNumber, setSerialNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [scanCompleted, setScanCompleted] = useState(false);
-  const [seringueStatus, setSeringueStatus] = useState([]);  // Nouveau state pour stocker le statut des seringues
-  const [loading, setLoading] = useState(false);  // Nouveau state pour gérer le chargement des seringues
+  const [seringueStatus, setSeringueStatus] = useState([]);  
+  const [loading, setLoading] = useState(false);  // 
   const [erreur, setErreur] = useState('');  // Nouveau state pour gérer les erreurs de vérification des seringues
-  const [handshake, setHandshake] = useState(0);  // Nouveau state pour le handshake
+  const [handshake, setHandshake] = useState(0);  
 
   const handleScan = async () => {
     setIsLoading(true);  
@@ -66,7 +66,8 @@ const Ping = () => {
         results: response.data.results,
       };
   
-      history.push(newEntry);  // Ajoute l'objet au tableau sans utiliser le numéro de série comme clé
+      // ajouter dans le tableau history
+      history.push(newEntry);  
       localStorage.setItem('pingHistory', JSON.stringify(history));
   
       // Enregistrer les résultats des seringues
@@ -102,7 +103,7 @@ const Ping = () => {
   
     setLoading(true);
     setErreur('');
-    setSeringueStatus([]);  // Réinitialise les données à chaque test
+    setSeringueStatus([]);
   
     try {
       const currentHandshake = handshake;
@@ -129,7 +130,7 @@ const Ping = () => {
   
       const formatted = {
         id: data.parsed.canAddress,
-        connected: data.parsed.serialNumber !== '000000000000', // Condition ajoutée ici
+        connected: data.parsed.serialNumber !== '000000000000',
         serialNumber: data.parsed.serialNumber,
       };
   

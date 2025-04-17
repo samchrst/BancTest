@@ -7,22 +7,18 @@ const PingHistory = () => {
 
   // Charger l'historique depuis le localStorage à l'aide de useEffect
   useEffect(() => {
-    // Récupérer l'historique enregistré sous la clé 'pingHistory' dans le localStorage
     const storedHistory = JSON.parse(localStorage.getItem('pingHistory')) || [];
-
     // Inverser l'ordre des éléments pour afficher les plus récents en premier
     setHistoryData(storedHistory.reverse());
   }, []);
 
   const handleRowClick = (serialNumber) => {
-    // Naviguer vers la page de détail du scan basé sur le numéro de série
     navigate(`/rapport/${serialNumber}`);
   };
 
   return (
     <div className="container py-5">
       <h2 className="mb-4">Historique des Pings</h2>
-      {/* Affichage de l'historique avec une liste stylisée grâce à Bootstrap */}
       {historyData.length > 0 ? (
         <ul className="list-group">
           {historyData.map((item) => (
@@ -38,7 +34,7 @@ const PingHistory = () => {
           ))}
         </ul>
       ) : (
-        <p>Aucune donnée disponible</p> // Message affiché si l'historique est vide
+        <p>Aucune donnée disponible</p>
       )}
     </div>
   );

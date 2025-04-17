@@ -36,7 +36,6 @@ const Rapport = () => {
       {/* Parcours des racks */}
       {reportData.results.map((rack, index) => (
         <div key={index} className="mb-4">
-          {/* Carte englobant la socket et ses seringues */}
           <div className="card">
             <div className="card-body">
               <h5 className="card-title">Socket : {rack.host}</h5>

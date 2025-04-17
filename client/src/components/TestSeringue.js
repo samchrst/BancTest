@@ -4,7 +4,7 @@ const TestSeringue = ({ socketId }) => {
   const [seringueStatus, setSeringueStatus] = useState([]);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState('');
-  const [handshake, setHandshake] = useState(0); // 💡 compteur handshake
+  const [handshake, setHandshake] = useState(0);
   console.log("socketId reçu en prop :", socketId);
 
   const fetchWithTimeout = (url, options = {}, timeout = 10000) => {
@@ -22,7 +22,7 @@ const TestSeringue = ({ socketId }) => {
 
     try {
       const currentHandshake = handshake;
-      setHandshake((prev) => (prev + 1) % 256); // 🔄 on incrémente sur 1 byte max (0-255)
+      setHandshake((prev) => (prev + 1) % 256); //incrémente sur 1 byte max (0-255)
 
       const response = await fetchWithTimeout('http://localhost:3000/api/turnOn', {
         method: 'POST',
@@ -111,7 +111,7 @@ const TestSeringue = ({ socketId }) => {
   
       const formatted = {
         id: data.parsed.canAddress,
-        connected: data.parsed.serialNumber !== '000000000000', // Condition ajoutée ici
+        connected: data.parsed.serialNumber !== '000000000000',
         serialNumber: data.parsed.serialNumber,
       };
   
